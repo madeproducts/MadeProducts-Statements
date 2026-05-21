@@ -42,7 +42,7 @@
 
 @media (max-width: 640px) {
   .summaryStrip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -166,6 +166,8 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Table Header */
@@ -418,6 +420,7 @@
   .colActions {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 
