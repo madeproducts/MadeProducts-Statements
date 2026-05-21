@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import db from "@/lib/db";
 
-const prisma = new PrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
 
     // Fetch all clients with their statements
-    const clients = await prisma.client.findMany({
+    const clients = await db.client.findMany({
       include: {
         statements: {
           orderBy: { date: "asc" },
@@ -44,7 +44,5 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Backup API Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
