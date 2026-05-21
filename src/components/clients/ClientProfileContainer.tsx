@@ -108,6 +108,7 @@ export default function ClientProfileContainer({
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [selectedStatementId, setSelectedStatementId] = useState<string | null>(null);
   const [uploadedInvoiceUrl, setUploadedInvoiceUrl] = useState("");
   const [uploadedReceiptUrl, setUploadedReceiptUrl] = useState("");
 
