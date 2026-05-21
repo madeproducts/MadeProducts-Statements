@@ -363,8 +363,8 @@ export default function ClientProfileContainer({
             <MessageSquare size={16} /><span>Share</span>
           </button>
           {isAdmin && (
-            <button onClick={() => setActiveModal("delete-client")} className={`${formStyles.button} ${formStyles.buttonDanger}`}>
-              <Trash2 size={16} /><span>Delete Client</span>
+            <button onClick={() => setActiveModal("delete-client")} className={`${formStyles.button} ${formStyles.buttonDanger}`} title="Delete Client" style={{ padding: "8px 12px" }}>
+              <Trash2 size={16} />
             </button>
           )}
         </div>
