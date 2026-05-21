@@ -224,7 +224,7 @@ async function main() {
     // Full payment for INV/2024/001
     db.payment.create({
       data: {
-        statementId: statements[0].id,
+        clientId: statements[0].clientId,
         receivedAmount: 125000,
         date: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000),
         paymentMethod: PaymentMethod.BANK_TRANSFER,
@@ -235,7 +235,7 @@ async function main() {
     // Partial payment for INV/2024/002
     db.payment.create({
       data: {
-        statementId: statements[1].id,
+        clientId: statements[1].clientId,
         receivedAmount: 42500,
         date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         paymentMethod: PaymentMethod.UPI,
@@ -246,7 +246,7 @@ async function main() {
     // Full payment for INV/2024/004
     db.payment.create({
       data: {
-        statementId: statements[3].id,
+        clientId: statements[3].clientId,
         receivedAmount: 225000,
         date: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000),
         paymentMethod: PaymentMethod.CHEQUE,
@@ -257,7 +257,7 @@ async function main() {
     // Partial payment for INV/2024/006
     db.payment.create({
       data: {
-        statementId: statements[5].id,
+        clientId: statements[5].clientId,
         receivedAmount: 100000,
         date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
         paymentMethod: PaymentMethod.BANK_TRANSFER,
@@ -268,7 +268,7 @@ async function main() {
     // Full payment for INV/2024/008
     db.payment.create({
       data: {
-        statementId: statements[7].id,
+        clientId: statements[7].clientId,
         receivedAmount: 320000,
         date: new Date(Date.now() - 50 * 24 * 60 * 60 * 1000),
         paymentMethod: PaymentMethod.BANK_TRANSFER,
