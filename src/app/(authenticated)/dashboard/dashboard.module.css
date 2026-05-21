@@ -178,6 +178,13 @@
   border-bottom: none;
 }
 
+@media (max-width: 640px) {
+  .table th, .table td {
+    padding: 8px 4px;
+    font-size: 0.75rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboardCardTable thead {
     display: none;

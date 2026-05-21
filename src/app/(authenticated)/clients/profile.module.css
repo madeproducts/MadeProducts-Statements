@@ -156,6 +156,20 @@
 }
 
 /* Statement actions styling */
+@media (max-width: 640px) {
+  .sectionHeader .cardTitle {
+    font-size: 0.95rem;
+  }
+  .sectionHeader button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+  .sectionHeader button svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+}
+
 .actionLink {
   color: var(--primary);
   text-decoration: none;
