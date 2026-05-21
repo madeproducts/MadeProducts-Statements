@@ -1,0 +1,89 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  engineType      = "library"
+  previewFeatures = ["driverAdapters"]
+}
+
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  UPI
+  CHEQUE
+  CASH
+}
+
+enum StatementStatus {
+  PAID
+  PARTIAL
+  PENDING
+  OVERDUE
+}
+
+model UserProfile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String?
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_profiles")
+}
+
+model Client {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String?
+  companyName String      @map("company_name")
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  statements  Statement[]
+  payments    Payment[]
+
+  @@map("clients")
+}
+
+model Statement {
+  id             String          @id @default(uuid()) @db.Uuid
+  clientId       String          @map("client_id") @db.Uuid
+  client         Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoiceNumber  String?         @map("invoice_number")
+  productDetails String?         @map("product_details")
+  quantity       Int             @default(1)
+  billAmount     Decimal         @map("bill_amount") @db.Decimal(12, 2)
+  receivedAmount Decimal         @default(0) @map("received_amount") @db.Decimal(12, 2)
+  balanceAmount  Decimal         @map("balance_amount") @db.Decimal(12, 2)
+  status         StatementStatus @default(PENDING)
+  date           DateTime        @map("date")
+  notes          String?
+  invoiceUrl     String?         @map("invoice_url")
+  createdAt      DateTime        @default(now()) @map("created_at")
+
+  @@map("statements")
+}
+
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  clientId        String        @map("client_id") @db.Uuid
+  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  receivedAmount  Decimal       @map("received_amount") @db.Decimal(12, 2)
+  date            DateTime      @map("date")
+  paymentMethod   PaymentMethod @map("payment_method")
+  referenceNumber String?       @map("reference_number")
+  receiptUrl      String?       @map("receipt_url")
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@map("payments")
+}
