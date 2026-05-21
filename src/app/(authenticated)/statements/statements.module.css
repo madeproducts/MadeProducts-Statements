@@ -379,33 +379,52 @@
   }
 
   .tableRow {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "client client"
+      "billed paid"
+      "balance records"
+      "actions actions";
+    gap: 12px;
+    padding: 20px 16px;
+    border-bottom: 8px solid var(--bg-secondary);
+    background-color: var(--bg-primary);
   }
 
   .colClient {
-    width: 100%;
+    grid-area: client;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 12px;
   }
 
   .colNum {
     display: flex;
-    justify-content: space-between;
-    width: 100%;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
     text-align: left;
     padding-right: 0;
   }
 
+  /* Assign grid areas for numbers */
+  .tableRow > .colNum:nth-of-type(2) { grid-area: billed; }
+  .tableRow > .colNum:nth-of-type(3) { grid-area: paid; }
+  .tableRow > .colNum:nth-of-type(4) { grid-area: balance; }
+
   .colCenter {
-    text-align: left;
+    grid-area: records;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .amount,
   .balanceBadge {
     text-align: left;
     padding-right: 0;
+    font-size: 1.1rem;
+    margin-top: 4px;
   }
 
   .amountLabel {
@@ -418,9 +437,18 @@
   }
 
   .colActions {
+    grid-area: actions;
+    display: flex;
     width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color);
+  }
+  
+  .btnDownload, .btnShare {
+    flex: 1;
+    justify-content: center;
   }
 }
 
