@@ -28,7 +28,7 @@ export const generateClientStatementPDF = async (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(30, 41, 59); // var(--text-primary)
-  doc.text("STATEMENT OF ACCOUNT", 196, 25, { align: "right" });
+  doc.text("STATEMENT", 196, 25, { align: "right" });
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
@@ -45,7 +45,7 @@ export const generateClientStatementPDF = async (
   doc.setFontSize(10);
   doc.setTextColor(71, 85, 105);
   doc.text("Contact no: +91 8589907591", 38, 28);
-  doc.text("Website: www.madeproducts.in", 38, 34);
+  doc.text("www.madeproducts.in", 38, 34);
 
   // Divider Line
   doc.setDrawColor(226, 232, 240);
