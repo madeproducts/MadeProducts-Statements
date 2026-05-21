@@ -190,17 +190,17 @@ export default async function DashboardPage() {
                 <tbody>
                   {topClients.map((client) => (
                     <tr key={client.id}>
-                      <td>
+                      <td data-label="Company">
                         <Link href={`/clients/${client.id}`} style={{ fontWeight: 600, color: "var(--primary)", textDecoration: "none" }}>
                           {client.companyName}
                         </Link>
                       </td>
-                      <td>{client.name}</td>
-                      <td style={{ textAlign: "right" }}>{formatCurrency(client.totalBilled)}</td>
-                      <td style={{ textAlign: "right", color: "var(--success)", fontWeight: 500 }}>
+                      <td data-label="Contact">{client.name}</td>
+                      <td data-label="Billed" style={{ textAlign: "right" }}>{formatCurrency(client.totalBilled)}</td>
+                      <td data-label="Paid" style={{ textAlign: "right", color: "var(--success)", fontWeight: 500 }}>
                         {formatCurrency(client.totalPaid)}
                       </td>
-                      <td style={{ textAlign: "right", color: client.balance > 0 ? "var(--warning)" : "var(--text-secondary)" }}>
+                      <td data-label="Balance" style={{ textAlign: "right", color: client.balance > 0 ? "var(--warning)" : "var(--text-secondary)" }}>
                         {formatCurrency(client.balance)}
                       </td>
                     </tr>

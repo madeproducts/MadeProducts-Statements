@@ -178,6 +178,47 @@
   border-bottom: none;
 }
 
+@media (max-width: 768px) {
+  .table thead {
+    display: none;
+  }
+  
+  .table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "company company"
+      "billed paid"
+      "balance balance";
+    gap: 8px;
+    padding: 16px 12px;
+    border-bottom: 6px solid var(--bg-secondary);
+  }
+  
+  .table td {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-bottom: none;
+    text-align: left !important;
+  }
+  
+  .table td:nth-child(1) { grid-area: company; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
+  .table td:nth-child(2) { display: none; } /* Hide contact person on small mobile to save space */
+  .table td:nth-child(3) { grid-area: billed; }
+  .table td:nth-child(4) { grid-area: paid; }
+  .table td:nth-child(5) { grid-area: balance; }
+  
+  .table td::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
