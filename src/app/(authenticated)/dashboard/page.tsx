@@ -177,7 +177,7 @@ export default async function DashboardPage() {
               <h2 className={styles.panelTitle}>Top Clients by Revenue</h2>
             </div>
             <div className={styles.tableWrapper}>
-              <table className={styles.table}>
+              <table className={`${styles.table} ${styles.dashboardCardTable}`}>
                 <thead>
                   <tr>
                     <th>Company</th>
