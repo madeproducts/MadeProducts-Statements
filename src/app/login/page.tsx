@@ -114,12 +114,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className={styles.linkText}>
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className={styles.link}>
-            Sign Up
-          </Link>
-        </p>
+
       </div>
     </div>
   );
