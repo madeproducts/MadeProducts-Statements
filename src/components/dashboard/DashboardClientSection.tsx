@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { Search, Plus, Mail, Phone, MapPin, ExternalLink, Loader } from "lucide-react";
+import { Search, Plus, ExternalLink, Loader, Download, Share2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,7 +11,10 @@ import Modal from "../ui/Modal";
 import { createClientAction } from "@/app/actions/clients";
 import { clientFormSchema } from "@/lib/schemas";
 import { formatCurrency } from "@/lib/utils";
+import { generateClientStatementPDF } from "@/lib/pdf";
+import { useRouter } from "next/navigation";
 import styles from "@/app/(authenticated)/dashboard/dashboard.module.css";
+import statementsStyles from "@/app/(authenticated)/statements/statements.module.css";
 
 type ClientFormValues = z.infer<typeof clientFormSchema>;
 
@@ -24,10 +27,12 @@ interface ClientWithStatements {
   address: string | null;
   city: string | null;
   country: string | null;
-  createdAt: Date;
-  statements: {
-    balanceAmount: any;
-  }[];
+  createdAt: string;
+  totalBilled: number;
+  totalReceived: number;
+  balanceAmount: number;
+  statements: any[];
+  payments: any[];
 }
 
 interface DashboardClientSectionProps {
@@ -39,10 +44,13 @@ export default function DashboardClientSection({
   initialClients,
   currentUserRole,
 }: DashboardClientSectionProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
 
   const {
     register,
@@ -52,13 +60,9 @@ export default function DashboardClientSection({
   } = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
     defaultValues: {
-      name: "",
       companyName: "",
-      email: "",
       phone: "",
       address: "",
-      city: "",
-      country: "India",
     },
   });
 
@@ -76,16 +80,54 @@ export default function DashboardClientSection({
   };
 
   const getClientBalance = (client: ClientWithStatements) => {
-    return client.statements.reduce((sum, s) => sum + Number(s.balanceAmount), 0);
+    return client.balanceAmount;
+  };
+
+  const handleDownload = async (client: ClientWithStatements) => {
+    setLoadingId(client.id);
+    try {
+      const doc = await generateClientStatementPDF(client as any, client.statements, client.balanceAmount);
+      doc.save(`${client.companyName.replace(/[^a-z0-9]/gi, "_")}_Statement.pdf`);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleShare = async (client: ClientWithStatements) => {
+    setSharingId(client.id);
+    try {
+      const doc = await generateClientStatementPDF(client as any, client.statements, client.balanceAmount);
+      const pdfBlob = doc.output("blob");
+      const fileName = `${client.companyName.replace(/[^a-z0-9]/gi, "_")}_Statement.pdf`;
+      const file = new File([pdfBlob], fileName, { type: "application/pdf" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `${client.companyName} Statement`,
+          text: `Statement for ${client.companyName}. Balance Due: ${formatCurrency(client.balanceAmount)}`,
+        });
+      } else {
+        doc.save(fileName);
+        const msg = `Hello ${client.name || "Customer"}, please find your statement attached. Total Balance Due: ${formatCurrency(client.balanceAmount)}.`;
+        let phone = (client.phone || "").replace(/\D/g, "");
+        if (phone.length === 10) phone = "91" + phone;
+        if (phone) {
+          window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("Share failed", err);
+    } finally {
+      setSharingId(null);
+    }
   };
 
   const filteredClients = initialClients.filter((c) => {
     const q = search.toLowerCase();
     return (
       c.companyName.toLowerCase().includes(q) ||
-      (c.name && c.name.toLowerCase().includes(q)) ||
-      (c.email && c.email.toLowerCase().includes(q)) ||
-      (c.city && c.city.toLowerCase().includes(q))
+      (c.address && c.address.toLowerCase().includes(q))
     );
   });
 
@@ -121,72 +163,84 @@ export default function DashboardClientSection({
       </div>
 
       {/* Client Cards Grid */}
-      <div className={styles.clientGrid}>
-        {filteredClients.map((client) => {
-          const balance = getClientBalance(client);
-          return (
-            <Link
-              key={client.id}
-              href={`/clients/${client.id}`}
-              className={styles.clientCard}
-            >
-              <div className={styles.clientCardTop}>
-                <h3 className={styles.clientCompanyName}>{client.companyName}</h3>
-                <span className={styles.clientContactName}>{client.name}</span>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "12px" }}>
-                  {client.email && (
-                    <div className={styles.clientInfoRow}>
-                      <Mail size={14} />
-                      <span>{client.email}</span>
-                    </div>
-                  )}
-                  {client.phone && (
-                    <div className={styles.clientInfoRow}>
-                      <Phone size={14} />
-                      <span>{client.phone}</span>
-                    </div>
-                  )}
-                  {(client.city || client.country) && (
-                    <div className={styles.clientInfoRow}>
-                      <MapPin size={14} />
-                      <span>{[client.city, client.country].filter(Boolean).join(", ")}</span>
-                    </div>
-                  )}
+      <div className={styles.clientGrid} style={{ marginTop: "24px" }}>
+        {filteredClients.map((client) => (
+          <div 
+            key={client.id} 
+            className={styles.clientCard} 
+            style={{ height: "100%", cursor: "pointer" }}
+            onClick={() => router.push(`/clients/${client.id}`)}
+          >
+            <div className={styles.clientCardTop}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <div
+                  className={styles.clientCompanyName}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--primary)", fontWeight: 700 }}
+                >
+                  {client.companyName}
+                  <ExternalLink size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                 </div>
+                {client.address && <span className={styles.clientContactName}>{client.address}</span>}
               </div>
 
-              <div>
-                <div className={styles.clientCardDivider} />
-                <div className={styles.clientCardBottom}>
-                  <div className={styles.clientBalanceGroup}>
-                    <span className={styles.clientBalanceLabel}>Balance Due</span>
-                    <span
-                      className={styles.clientBalanceVal}
-                      style={{ color: balance > 0 ? "var(--warning)" : "var(--success)" }}
-                    >
-                      {formatCurrency(balance)}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
-                    View Profile <ExternalLink size={13} />
+
+            </div>
+
+            <div style={{ marginTop: "auto", paddingTop: "20px" }}>
+              <div className={styles.clientCardBottom} style={{ flexDirection: "column", alignItems: "stretch", gap: "16px", padding: "16px" }}>
+                <div className={styles.clientBalanceGroup}>
+                  <span className={styles.clientBalanceLabel}>Balance Due</span>
+                  <span
+                    className={styles.cardBalanceValue}
+                    style={{ color: client.balanceAmount > 0 ? "var(--warning)" : "var(--text-secondary)" }}
+                  >
+                    {formatCurrency(client.balanceAmount)}
                   </span>
                 </div>
+                
+                <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                  <button
+                    className={statementsStyles.btnDownload}
+                    style={{ flex: 1, justifyContent: "center", padding: "10px 0" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(client);
+                    }}
+                    disabled={loadingId === client.id}
+                  >
+                    <Download size={14} />
+                    <span className={styles.hideOnMobile}>{loadingId === client.id ? "PDF..." : "Download"}</span>
+                  </button>
+                  <button
+                    className={statementsStyles.btnShare}
+                    style={{ flex: 1, justifyContent: "center", padding: "10px 0" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShare(client);
+                    }}
+                    disabled={sharingId === client.id}
+                  >
+                    <Share2 size={14} />
+                    <span className={styles.hideOnMobile}>{sharingId === client.id ? "Share..." : "Share"}</span>
+                  </button>
+                </div>
               </div>
-            </Link>
-          );
-        })}
+            </div>
+          </div>
+        ))}
+
+        {filteredClients.length === 0 && (
+          <div className={styles.clientEmptyState} style={{ gridColumn: "1 / -1" }}>
+            <Search size={48} style={{ margin: "0 auto 16px", color: "var(--border-hover)" }} />
+            <h3>No clients found</h3>
+            <p style={{ fontSize: "14px", marginTop: "8px" }}>
+              Try adjusting your search criteria or register a new buyer profile.
+            </p>
+          </div>
+        )}
       </div>
 
-      {filteredClients.length === 0 && (
-        <div className={styles.clientEmptyState}>
-          <Search size={48} style={{ margin: "0 auto 16px", color: "var(--border-hover)" }} />
-          <h3>No clients found</h3>
-          <p style={{ fontSize: "14px", marginTop: "8px" }}>
-            Try adjusting your search criteria or register a new buyer profile.
-          </p>
-        </div>
-      )}
+
 
       {/* Add Client Modal */}
       <Modal
@@ -211,28 +265,6 @@ export default function DashboardClientSection({
           </div>
 
           <div className={styles.clientInputGroup}>
-            <label className={styles.clientLabel}>Contact Name <span style={{fontWeight:400,color:'var(--text-muted)',fontSize:'0.8rem'}}>(optional)</span></label>
-            <input
-              {...register("name")}
-              placeholder="e.g. Rajesh Sharma"
-              className={styles.clientInput}
-              disabled={isPending}
-            />
-          </div>
-
-          <div className={styles.clientInputGroup}>
-            <label className={styles.clientLabel}>Email Address <span style={{fontWeight:400,color:'var(--text-muted)',fontSize:'0.8rem'}}>(optional)</span></label>
-            <input
-              {...register("email")}
-              type="email"
-              placeholder="e.g. billing@steelcraft.in"
-              className={styles.clientInput}
-              disabled={isPending}
-            />
-            {errors.email && <span className={styles.clientError}>{errors.email.message}</span>}
-          </div>
-
-          <div className={styles.clientInputGroup}>
             <label className={styles.clientLabel}>Phone Number <span style={{fontWeight:400,color:'var(--text-muted)',fontSize:'0.8rem'}}>(optional)</span></label>
             <input
               {...register("phone")}
@@ -243,35 +275,13 @@ export default function DashboardClientSection({
           </div>
 
           <div className={`${styles.clientInputGroup} ${styles.clientFullWidth}`}>
-            <label className={styles.clientLabel}>Address <span style={{fontWeight:400,color:'var(--text-muted)',fontSize:'0.8rem'}}>(optional)</span></label>
+            <label className={styles.clientLabel}>Location <span style={{fontWeight:400,color:'var(--text-muted)',fontSize:'0.8rem'}}>(optional)</span></label>
             <input
               {...register("address")}
               placeholder="e.g. Plot 42, GIDC Industrial Estate"
               className={styles.clientInput}
               disabled={isPending}
             />
-          </div>
-
-          <div className={styles.clientInputGroup}>
-            <label className={styles.clientLabel}>City</label>
-            <input
-              {...register("city")}
-              placeholder="e.g. Ahmedabad"
-              className={styles.clientInput}
-              disabled={isPending}
-            />
-            {errors.city && <span className={styles.clientError}>{errors.city.message}</span>}
-          </div>
-
-          <div className={styles.clientInputGroup}>
-            <label className={styles.clientLabel}>Country</label>
-            <input
-              {...register("country")}
-              placeholder="e.g. India"
-              className={styles.clientInput}
-              disabled={isPending}
-            />
-            {errors.country && <span className={styles.clientError}>{errors.country.message}</span>}
           </div>
 
           <div className={styles.clientFullWidth} style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>

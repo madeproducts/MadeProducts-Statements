@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FileText, LogOut, Menu, X, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, FileText, LogOut, Menu, X, ShieldAlert, Home } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { useToast } from "../ui/Toast";
 import styles from "./Sidebar.module.css";
@@ -24,6 +24,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const navigation = [
+    { name: "Home", href: "/home", icon: Home },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Statements", href: "/statements", icon: FileText },
   ];

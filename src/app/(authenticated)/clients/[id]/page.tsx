@@ -55,7 +55,7 @@ export default async function ClientProfilePage({ params }: PageProps) {
   return (
     <div>
       <Link
-        href="/dashboard"
+        href="/home"
         style={{
           display: "inline-flex",
           alignItems: "center",

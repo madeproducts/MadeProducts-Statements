@@ -569,7 +569,18 @@
 
 .clientBalanceGroup {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .clientBalanceGroup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
 .clientBalanceLabel {
@@ -592,6 +603,42 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-muted);
+}
+
+/* Responsive Card Fields */
+.cardAmountLabel {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.cardAmountValue {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.cardBalanceValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .cardAmountLabel {
+    font-size: 0.65rem;
+  }
+  .cardAmountValue {
+    font-size: 0.8rem;
+  }
+  .cardBalanceValue {
+    font-size: 1.1rem;
+  }
+  .hideOnMobile {
+    display: none;
+  }
 }
 
 /* Client Form Styles */

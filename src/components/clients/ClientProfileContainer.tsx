@@ -118,13 +118,9 @@ export default function ClientProfileContainer({
   const editClientForm = useForm<z.infer<typeof clientFormSchema>>({
     resolver: zodResolver(clientFormSchema) as any,
     defaultValues: {
-      name: client.name || "",
       companyName: client.companyName,
-      email: client.email || "",
       phone: client.phone || "",
       address: client.address || "",
-      city: client.city || "",
-      country: client.country || "",
     },
   });
 
@@ -287,7 +283,7 @@ export default function ClientProfileContainer({
     doc.save(fileName);
     let phone = (client.phone || "").replace(/\D/g, "");
     if (phone.length === 10) phone = "91" + phone;
-    const msg = `Hello ${client.name || "Customer"}. Please find your account statement attached. Current outstanding balance is ${formatCurrency(pendingBalance)}. (Note: Please attach the downloaded PDF manually)`;
+    const msg = `Hello. Please find the account statement attached for ${client.companyName}. Current outstanding balance is ${formatCurrency(pendingBalance)}. (Note: Please attach the downloaded PDF manually)`;
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -353,7 +349,7 @@ export default function ClientProfileContainer({
           >
             {client.companyName}
           </h1>
-          <p className={styles.clientSubtitle}>Contact Representative: {client.name}</p>
+          <p className={styles.clientSubtitle}>{client.address || "No Location Provided"}</p>
         </div>
         <div className={styles.buttonGroup}>
           <button onClick={handleDownloadPDF} className={`${formStyles.button} ${formStyles.buttonSecondary}`}>
@@ -396,9 +392,8 @@ export default function ClientProfileContainer({
                 <span>Corporate Details</span>
                 <Edit size={14} style={{ marginLeft: "auto", color: "var(--text-muted)" }} />
               </h2>
-              <div className={styles.detailRow}><span className={styles.detailLabel}>Email</span><span className={styles.detailValue}>{client.email}</span></div>
-              <div className={styles.detailRow}><span className={styles.detailLabel}>Phone</span><span className={styles.detailValue}>{client.phone}</span></div>
-              <div className={styles.detailRow}><span className={styles.detailLabel}>Address</span><span className={styles.detailValue}>{client.address}, {client.city}, {client.country}</span></div>
+              <div className={styles.detailRow}><span className={styles.detailLabel}>Phone</span><span className={styles.detailValue}>{client.phone || "—"}</span></div>
+              <div className={styles.detailRow}><span className={styles.detailLabel}>Location</span><span className={styles.detailValue}>{client.address || "—"}</span></div>
               <div className={styles.detailRow}><span className={styles.detailLabel}>Since</span><span className={styles.detailValue}>{formatDate(client.createdAt)}</span></div>
             </div>
           )}
@@ -520,8 +515,6 @@ export default function ClientProfileContainer({
         <form onSubmit={editClientForm.handleSubmit(onEditClientSubmit as any)} className={formStyles.form}>
           {([
             ["companyName", "Company Name", "text"],
-            ["name", "Contact Name", "text"],
-            ["email", "Email Address", "email"],
             ["phone", "Phone Number", "text"],
           ] as const).map(([field, label, type]) => (
             <div key={field} className={formStyles.inputGroup}>
@@ -532,17 +525,9 @@ export default function ClientProfileContainer({
           ))}
 
           <div className={`${formStyles.inputGroup} ${formStyles.fullWidth}`}>
-            <label className={formStyles.label}>Address</label>
-            <input {...editClientForm.register("address")} className={formStyles.input} disabled={isPending} />
+            <label className={formStyles.label}>Location</label>
+            <input {...editClientForm.register("address")} placeholder="e.g. Plot 42, GIDC Industrial Estate" className={formStyles.input} disabled={isPending} />
             {editClientForm.formState.errors.address && <span className={formStyles.error}>{editClientForm.formState.errors.address.message}</span>}
-          </div>
-          <div className={formStyles.inputGroup}>
-            <label className={formStyles.label}>City</label>
-            <input {...editClientForm.register("city")} className={formStyles.input} disabled={isPending} />
-          </div>
-          <div className={formStyles.inputGroup}>
-            <label className={formStyles.label}>Country</label>
-            <input {...editClientForm.register("country")} className={formStyles.input} disabled={isPending} />
           </div>
           <div className={formStyles.fullWidth} style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
             <button type="button" onClick={() => setActiveModal(null)} className={`${formStyles.button} ${formStyles.buttonSecondary}`} disabled={isPending}>Cancel</button>

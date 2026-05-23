@@ -35,7 +35,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (state.success) {
       showToast("Logged in successfully!", "success");
-      window.location.href = "/dashboard";
+      window.location.href = "/home";
     } else if (state.error) {
       showToast(state.error, "error");
     }

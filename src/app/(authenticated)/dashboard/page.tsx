@@ -15,7 +15,6 @@ import {
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { getCurrentUser } from "@/lib/auth";
-import DashboardClientSection from "@/components/dashboard/DashboardClientSection";
 
 // Forces dynamic rendering to fetch fresh ledger states
 export const revalidate = 0;
@@ -29,8 +28,7 @@ export default async function DashboardPage() {
     statements,
     payments,
     allPayments,
-    clientsWithStatements,
-    allClients
+    clientsWithStatements
   ] = await Promise.all([
     db.client.count(),
     db.statement.findMany({
@@ -46,18 +44,6 @@ export default async function DashboardPage() {
     }),
     db.client.findMany({
       include: { statements: true },
-    }),
-    db.client.findMany({
-      include: {
-        statements: {
-          select: {
-            balanceAmount: true,
-          },
-        },
-      },
-      orderBy: {
-        companyName: "asc",
-      },
     })
   ]);
 
@@ -105,13 +91,6 @@ export default async function DashboardPage() {
     .sort((a, b) => b.totalPaid - a.totalPaid)
     .slice(0, 5);
 
-  const serializedClients = allClients.map((c) => ({
-    ...c,
-    statements: c.statements.map((s) => ({
-      balanceAmount: Number(s.balanceAmount),
-    })),
-  }));
-
   return (
     <div>
       <header className={styles.header}>
@@ -153,12 +132,6 @@ export default async function DashboardPage() {
           <div className={styles.metricFooter}>Registered buyers</div>
         </div>
       </div>
-
-      {/* Integrated Client Directory Section */}
-      <DashboardClientSection
-        initialClients={serializedClients}
-        currentUserRole={user?.role || "STAFF"}
-      />
 
       {/* Main Charts & Lists Grid */}
       <div className={styles.gridTwoCols}>

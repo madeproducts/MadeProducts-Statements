@@ -5,7 +5,7 @@ export default async function RootPage() {
   const user = await getCurrentUser();
 
   if (user) {
-    redirect("/dashboard");
+    redirect("/home");
   } else {
     redirect("/login");
   }

@@ -17,7 +17,7 @@ export const generateClientStatementPDF = async (
       img.onerror = resolve; 
     });
     // Add logo (adjust dimensions as needed)
-    doc.addImage(img, "PNG", 14, 15, 20, 20);
+    doc.addImage(img, "PNG", 14, 14, 24, 24);
   } catch (e) {
     console.error("Failed to load logo", e);
   }
@@ -26,62 +26,70 @@ export const generateClientStatementPDF = async (
 
   // Header - Right aligned Document Title
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
+  doc.setFontSize(22);
   doc.setTextColor(30, 41, 59); // var(--text-primary)
-  doc.text("STATEMENT", 196, 25, { align: "right" });
+  doc.text("STATEMENT", 196, 21, { align: "right" });
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 116, 139);
-  doc.text(`Generated on: ${formatDate(new Date().toISOString())}`, 196, 32, { align: "right" });
+  doc.text(`Generated on: ${formatDate(new Date().toISOString())}`, 196, 29, { align: "right" });
 
   // Company Info (Left)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.setTextColor(30, 41, 59);
-  doc.text("MADE PRODUCTS", 38, 22);
+  doc.text("MADE PRODUCTS", 42, 19);
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(71, 85, 105);
-  doc.text("Contact no: +91 8589907591", 38, 28);
-  doc.text("www.madeproducts.in", 38, 34);
+  doc.text("www.madeproducts.in", 42, 25);
+  doc.text("+91 8589907591", 42, 30.5);
 
   // Divider Line
   doc.setDrawColor(226, 232, 240);
-  doc.line(14, 45, 196, 45);
+  doc.line(14, 40, 196, 40);
 
   // Client Info & Summary Box
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.setTextColor(30, 41, 59);
-  doc.text("BILL TO:", 14, 55);
+  doc.setTextColor(100, 116, 139);
+  doc.text("BILL TO:", 14, 48);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text(client.companyName || "N/A", 14, 62);
+  doc.setFontSize(13);
+  doc.setTextColor(30, 41, 59);
+  doc.text(client.companyName || "N/A", 14, 54);
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(71, 85, 105);
-  let yPos = 68;
-  if (client.name) { doc.text(`Contact: ${client.name}`, 14, yPos); yPos += 5; }
-  if (client.phone) { doc.text(`Phone: ${client.phone}`, 14, yPos); yPos += 5; }
-  if (client.email) { doc.text(`Email: ${client.email}`, 14, yPos); yPos += 5; }
+  let yPos = 60;
+  if (client.address) { 
+    // Use splitTextToSize to handle long locations gracefully
+    const splitLocation = doc.splitTextToSize(`Location: ${client.address}`, 90);
+    doc.text(splitLocation, 14, yPos); 
+    yPos += (splitLocation.length * 5); 
+  }
+  if (client.phone) { 
+    doc.text(`Phone: ${client.phone}`, 14, yPos); 
+    yPos += 5; 
+  }
 
   // Outstanding Balance Summary
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(120, 52, 76, 28, 2, 2, "FD");
+  doc.roundedRect(120, 46, 76, 26, 2, 2, "FD");
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
-  doc.text("TOTAL OUTSTANDING", 158, 62, { align: "center" });
+  doc.text("TOTAL OUTSTANDING", 158, 55, { align: "center" });
   
   doc.setFontSize(16);
   doc.setTextColor(220, 38, 38); // Red-ish for balance
-  doc.text(formatPdfCurrency(pendingBalance), 158, 72, { align: "center" });
+  doc.text(formatPdfCurrency(pendingBalance), 158, 64, { align: "center" });
 
   // Unified ledger entries for Statement view
   const ledgerEntries = [
@@ -134,12 +142,12 @@ export const generateClientStatementPDF = async (
   });
 
   autoTable(doc, {
-    startY: 90,
+    startY: 84,
     head: [['Date', 'Transaction Details', 'Billed Amount', 'Received Amount', 'Balance']],
     body: tableData,
     theme: 'grid',
     headStyles: { 
-      fillColor: [79, 70, 229], // Primary Indigo
+      fillColor: [45, 55, 72], // #2D3748
       textColor: [255, 255, 255],
       fontStyle: 'bold',
       halign: 'left'
