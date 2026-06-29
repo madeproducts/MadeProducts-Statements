@@ -140,7 +140,6 @@ src/
 | **Delete payment record** | ✅ | ❌ |
 
 ---
-
 ## Payment Status Logic
 
 Statuses are calculated automatically on every payment mutation:
